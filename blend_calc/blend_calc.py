@@ -133,10 +133,10 @@ def get_cat_subset(cat,center,ra_range=0.5*u.arcmin,dec_range=0.5*u.arcmin, size
         subset = subset[subset[:,5]<=magcut]
     
     if super_e_mag is not None:
-        subset = subset[subset[:,10]<=super_e_mag]
+        subset = subset[subset[:,11]<=super_e_mag]
     
     if super_sb_mag is not None:
-        subset = subset[subset[:,11]<=super_sb_mag]
+        subset = subset[subset[:,12]<=super_sb_mag]
 
     if zcut is not None:
         subset = subset[subset[:,2]<=zcut]
