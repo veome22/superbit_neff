@@ -61,19 +61,36 @@ def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
         starb_template[:,0] = wavelengths, [Angstrom]
         starb_template[:,1] = flux density, [erg/s/cm^2/Angstrom]
 
+
     Returns:
-        ST Magnitude
+    ----------
+    target_e_mag : float
+        ST Mag observed in target band, if source is an Elliptical
+    
+    target_starb_mag
+        ST Mag observed in target band, if source is a Starburst
+        
+    src_e_mag (not returned)
+        ST Mag observed in source band, if source is an Elliptical. 
+        Should be the same as mag_obs.
+        
+    src_starb_mag (not returned)
+        ST Mag observed in source band, if source is a Starburst. 
+        Should be the same as mag_obs.
+        
     """
 
-    # Elliptical Spectrum Template with redshift
+    # Get Elliptical Spectrum Template with redshift
     e_wavelength = e_template[:,0] * (1+z)
     e_flux = e_template[:,1]
+    
 
-    # Starburst Spectrum Template with redshift
+    # Get Starburst Spectrum Template with redshift
     starb_wavelength = starb_template[:,0] * (1+z)
     starb_flux = starb_template[:,1]
 
-    # Get Modified Elliptical Spectrum for the given source
+    
+    # Modify the Elliptical Spectrum to satisfy the Observed ST Mag.
     non0_indices = np.nonzero(src_band(e_wavelength))
     lam = e_wavelength[non0_indices]
     f_lam = e_flux[non0_indices]
@@ -81,10 +98,17 @@ def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     e_mag_exp = get_stmag(r, f_lam, lam)
     e_corr = get_correction(e_mag_exp, mag_obs)
     src_e_mag = get_stmag(r, f_lam, lam, correction=e_corr)
+    
+    # Get observed Elliptical ST Mag in Target Band
+    non0_indices = np.nonzero(target_band(e_wavelength))
+    lam = e_wavelength[non0_indices]
+    f_lam = e_flux[non0_indices]
+    r = target_band(e_wavelength)[non0_indices]
+    target_e_mag = get_stmag(r, f_lam, lam, correction=e_corr)
+    
+    
 
-
-
-    # Get Modified Starburst Spectrum
+    # Modify the Starburst Spectrum to satisfy the Observed ST Mag.
     non0_indices = np.nonzero(src_band(starb_wavelength))
     lam = starb_wavelength[non0_indices]
     f_lam = starb_flux[non0_indices]
@@ -93,23 +117,13 @@ def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     starb_corr = get_correction(starb_mag_exp, mag_obs)
     src_starb_mag = get_stmag(r, f_lam, lam, correction=starb_corr)
 
-
- 
-
-    # Get Elliptical mag for Target Band
-    non0_indices = np.nonzero(target_band(e_wavelength))
-    lam = e_wavelength[non0_indices]
-    f_lam = e_flux[non0_indices]
-    r = target_band(e_wavelength)[non0_indices] #unitless
-    target_e_mag = get_stmag(r, f_lam, lam, correction=e_corr)
-
-    # Get Starburst mag for Target Band
+    # Get observed Starburst ST Mag in Target Band
     non0_indices = np.nonzero(target_band(starb_wavelength))
     lam = starb_wavelength[non0_indices]
-    f_lam = starb_flux[non0_indices] #erg s^-1 cm^-2
-    r = target_band(starb_wavelength)[non0_indices] #unitless
+    f_lam = starb_flux[non0_indices]
+    r = target_band(starb_wavelength)[non0_indices]
     target_starb_mag = get_stmag(r, f_lam, lam, correction=starb_corr)
 
 
-    return target_e_mag, target_starb_mag, src_e_mag, src_starb_mag
+    return target_e_mag, target_starb_mag#, src_e_mag, src_starb_mag
 
