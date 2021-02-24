@@ -17,7 +17,7 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
     cosmos : 2d numpy array
         Complete catalog of objects, formatted as a table.
     center : [float, float]
-        Coordinates of the center of the tile over which the blending ratio is to be computed.
+        Coordinates of the center of the tile [ra, dec] over which the blending ratio is to be computed.
     psf : float
         PSF of the target instrument in arcsec.
     ra_range : u.arcmin, optional
@@ -41,7 +41,7 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
         ratio of blended objects to all objects in the selected tile.
     """   
     # get objects with the specified size and position
-    cat = get_cat_subset(cosmos,[ra,dec], ra_range=ra_range, dec_range=dec_range, sizecut=size, magcut=mag, super_e_mag=super_e_mag, super_sb_mag=super_e_mag, zcut=zcut)
+    cat = get_cat_subset(cosmos, center, ra_range=ra_range, dec_range=dec_range, sizecut=size, magcut=mag, super_e_mag=super_e_mag, super_sb_mag=super_e_mag, zcut=zcut)
 
     if (cat.shape[0]==0):
         return np.nan
