@@ -88,8 +88,11 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
                             blending[j]=True
 
 
-    # Count unblended objects
+    # Count blended objects
     count = np.count_nonzero(blending)
+    # Count discarded objects
+    count = count + (cat_hst.shape[0] - cat.shape[0])
+    
     blend_ratio = count / cat_hst.shape[0]
     return blend_ratio
 
