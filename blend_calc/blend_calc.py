@@ -53,7 +53,10 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
     cat[:,0] = cat[:,0]*u.degree.to(u.arcsec)
     cat[:,1] = cat[:,1]*u.degree.to(u.arcsec)
     
-
+    # Discard all the sources smaller than 1.2*PSF
+    cat_hst = np.copy(cat)
+    cat = cat[cat[:,9] >= 1.2*psf]
+    
     distance = np.zeros((cat.shape[0], cat.shape[0]))
     blending  = np.zeros((cat.shape[0]), dtype=bool)
 
@@ -87,7 +90,7 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
 
     # Count unblended objects
     count = np.count_nonzero(blending)
-    blend_ratio = count / cat.shape[0]
+    blend_ratio = count / cat_hst.shape[0]
     return blend_ratio
 
 
