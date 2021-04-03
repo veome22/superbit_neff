@@ -157,13 +157,13 @@ def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
 # Get SuperBIT magitudes from Observed Mag
 def abmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_template, src_pivot=1.0, target_pivot=1.0):
     """
-    Converts ST Mag from one filter to another, assuming both Elliptical and Starburst 
+    Converts AB Mags from one filter to another, assuming both Elliptical and Starburst 
     spectra for the source
 
     Parameters
     ----------
     mag_obs : float
-        ST Mag observed by Source Band, [unitless]
+        AB Mag observed by Source Band, [unitless]
 
     z : float
         Redshift of source galaxy
@@ -228,7 +228,7 @@ def abmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     e_corr = get_correction(e_mag_exp, mag_obs)
     src_e_mag = get_abmag(r, f_lam, lam, src_pivot, correction=e_corr)
     
-    # Get observed Elliptical ST Mag in Target Band
+    # Get observed Elliptical AB Mag in Target Band
     non0_indices = np.nonzero(target_band(e_wavelength))
     lam = e_wavelength[non0_indices]
     f_lam = e_flux[non0_indices]
@@ -237,7 +237,7 @@ def abmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     
     
 
-    # Modify the Starburst Spectrum to satisfy the Observed ST Mag.
+    # Modify the Starburst Spectrum to satisfy the Observed AB Mag.
     non0_indices = np.nonzero(src_band(starb_wavelength))
     lam = starb_wavelength[non0_indices]
     f_lam = starb_flux[non0_indices]
@@ -246,7 +246,7 @@ def abmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     starb_corr = get_correction(starb_mag_exp, mag_obs)
     src_starb_mag = get_abmag(r, f_lam, lam, src_pivot, correction=starb_corr)
 
-    # Get observed Starburst ST Mag in Target Band
+    # Get observed Starburst AB Mag in Target Band
     non0_indices = np.nonzero(target_band(starb_wavelength))
     lam = starb_wavelength[non0_indices]
     f_lam = starb_flux[non0_indices]
