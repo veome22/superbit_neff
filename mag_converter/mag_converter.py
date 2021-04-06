@@ -1,8 +1,34 @@
-__all__ = ['stmag_conversion', 'get_stmag', 'abmag_conversion', 'get_abmag', 'get_correction']
+__all__ = ['stmag_conversion', 'get_stmag', 'abmag_conversion', 'get_abmag', 'get_correction', 'redshift_sed']
 
 import numpy as np
 from astropy import units as u
 from astropy import constants as const
+
+# Get redshifted spectrum by redshifting in Integrated Flux Density space 
+def redshift_sed(sed, z):
+    """
+    Returns the redshifted SED from a source spectrum
+
+    Args:
+        sed: Source Spectral Flux Density, [ergs/s/cm^2/Angstrom]
+        z: Redshift
+
+    Returns:
+        Redshifted SED, [ergs/s/cm^2/Angstrom]
+    """
+    int_sed = np.copy(sed)
+    
+    # Compute Integrated SED (ergs cm^-2 s^-1)
+    int_sed[:,1] = int_sed[:,0] * int_sed[:,1]
+    
+    # Redshift integrated SED
+    int_sed[:,0] = int_sed[:,0]* (1+z)
+    
+    # Convert back to flux density units
+    int_sed[:,1] = int_sed[:,1] / int_sed[:,0]
+    
+    return int_sed
+
 
 # Get mag from Response Function, Spectrum, Lambda Range, and Scaling Correction to Spectrum
 def get_stmag(r, f_lam, lam, correction=1.0):
@@ -106,13 +132,15 @@ def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     """
 
     # Get Elliptical Spectrum Template with redshift
-    e_wavelength = e_template[:,0] * (1+z)
-    e_flux = e_template[:,1]
+    e_redshift = redshift_sed(e_template, z)
+    e_wavelength = e_redshift[:,0]
+    e_flux = e_redshift[:,1]
     
 
     # Get Starburst Spectrum Template with redshift
-    starb_wavelength = starb_template[:,0] * (1+z)
-    starb_flux = starb_template[:,1]
+    starb_redshift = redshift_sed(starb_template, z)
+    starb_wavelength = starb_redshift[:,0]
+    starb_flux = starb_redshift[:,1]
 
     
     # Modify the Elliptical Spectrum to satisfy the Observed ST Mag.
@@ -210,13 +238,15 @@ def abmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
     """
 
     # Get Elliptical Spectrum Template with redshift
-    e_wavelength = e_template[:,0] * (1+z)
-    e_flux = e_template[:,1]
+    e_redshift = redshift_sed(e_template, z)
+    e_wavelength = e_redshift[:,0]
+    e_flux = e_redshift[:,1]
     
 
     # Get Starburst Spectrum Template with redshift
-    starb_wavelength = starb_template[:,0] * (1+z)
-    starb_flux = starb_template[:,1]
+    starb_redshift = redshift_sed(starb_template, z)
+    starb_wavelength = starb_redshift[:,0]
+    starb_flux = starb_redshift[:,1]
 
     
     # Modify the Elliptical Spectrum to satisfy the Observed AB Mag in Source Band.
