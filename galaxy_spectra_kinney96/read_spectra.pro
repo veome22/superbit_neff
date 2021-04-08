@@ -1,0 +1,102 @@
+pro read_spectra,l_out,out,plotem=plotem
+
+fn=['bulge','elliptical',$
+    's0','sa','sb','sc',$
+    'starb1','starb2','starb3','starb4','starb5','starb6']
+
+fn=fn+'_template.ascii'
+
+nf=n_elements(fn)
+
+n_out=4096
+l_min=200.
+l_max=1100.
+l_out=linspace(l_min,l_max,n_out)
+
+dl=25.
+sl=5.
+ns=5
+
+out=fltarr(nf+1,n_out)
+
+yr=[0,8d-14]
+
+if keyword_set(plotem) then begin
+
+   lzr,file='gal_spectra',/color,/nice
+   @pscolormap
+
+   plot,[100,1200],[0,0],/nodata,/xstyle,yr=[0,6e-14],$
+        ytitle='[erg/cm^2/s/AA]'
+
+endif
+
+rms=0.02*max(yr)
+
+nred=6
+
+for i=0,nf-1 do begin
+   print,'Reading from ',fn[i]
+   readcol,fn[i],lambda,flux,/silent
+   
+   id=sort(lambda)
+   lambda=lambda[id]/10.0
+   flux=flux[id]
+   
+   n_spec=n_elements(flux)
+   
+   sflux=ssmooth(flux,sl)
+   
+   print,'Min/Max wavelength: ',min(lambda),max(lambda)
+   print,'Resolution: ',median(lambda-shift(lambda,1))
+   
+   sidx=(n_spec-ns*sl-dl)
+   eidx=(n_spec-dl)
+   
+   pad=sflux[sidx:eidx]
+   npad=n_elements(pad)
+
+   lpad=linspace(lambda[eidx+1],l_max,npad)
+   lambda=[lambda[0:eidx],lpad]
+
+   pad=median(pad)+rms[0]*randomn(seed,npad)
+
+   flux=[flux[0:eidx],pad]
+
+   tmpf=interpol(flux,lambda,l_out)
+   out[i,*]=tmpf
+
+   if i eq 0 then aspec=tmpf else if i lt 6 then aspec=aspec+tmpf
+   
+   if keyword_set(plotem) then begin
+      oplot,l_out,ssmooth(tmpf,sl*3),color=ps_colors[i mod n_elements(ps_colors)]
+   endif
+endfor
+
+aspec=aspec/double(nred)
+
+out[i,*]=aspec
+
+if keyword_set(plotem) then begin
+   oplot,l_out,aspec,thick=4
+   clzr,/png
+endif
+
+fmt='(8(g12.6))'
+
+openw,1,'spectra_kinney96.txt'
+
+printf,1,'#','[nm]','bulge','elliptical','s0','sa','sb','sc','avg',$
+       format='(A1,A11,7(A12))'
+
+for i=0L,n_out-1 do begin
+   printf,1,l_out[i],out[0,i],out[1,i],$
+          out[2,i],out[3,i],out[4,i],out[5,i],out[12,i],$
+          format=fmt
+endfor
+close,1
+
+;save a binary for the hell of it
+save,file='spectra_kinney96.sav',l_out,out
+
+end
