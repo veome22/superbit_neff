@@ -8,7 +8,7 @@ ARCSEC_TO_PIX = 1/PIX_TO_ARCSEC # HST ACS pixel per arcsec
 
 
 # get blend ratio for objects in one arcmin^2 around center, greater than size and lower than magnitude
-def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.arcmin, size=None, mag=None, super_e_mag=None, super_sb_mag=None, zcut=None):
+def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.arcmin, size=None, mag=None, super_e_mag=None, super_sb_mag=None, super_mixed_mag=None, zcut=None):
     """
     Compute a blending ratio for a given PSF, over a given region in the COSMOS catalog.
 
@@ -41,7 +41,7 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
         ratio of blended objects to all objects in the selected tile.
     """   
     # get objects with the specified size and position
-    cat = get_cat_subset(cosmos, center, ra_range=ra_range, dec_range=dec_range, sizecut=size, magcut=mag, super_e_mag=super_e_mag, super_sb_mag=super_e_mag, zcut=zcut)
+    cat = get_cat_subset(cosmos, center, ra_range=ra_range, dec_range=dec_range, sizecut=size, magcut=mag, super_e_mag=super_e_mag, super_sb_mag=super_sb_mag, super_mixed_mag=super_mixed_mag, zcut=zcut)
 
     if (cat.shape[0]==0):
         return np.nan
@@ -119,7 +119,7 @@ def overlap_area(d, rad1, rad2):
              0.5 * (r2 * np.sin(2*alpha) + R2 * np.sin(2*beta))
            )
 
-def get_cat_subset(cat,center,ra_range=0.5*u.arcmin,dec_range=0.5*u.arcmin, sizecut=None, magcut=None, super_e_mag=None, super_sb_mag=None, zcut=None):
+def get_cat_subset(cat,center,ra_range=0.5*u.arcmin,dec_range=0.5*u.arcmin, sizecut=None, magcut=None, super_e_mag=None, super_sb_mag=None, super_mixed_mag=None, zcut=None):
     """ get a square subset the catalogue centered at a given position and a size cut in arcseconds"""
 
     ra_range = ra_range.to(u.deg).value
@@ -143,6 +143,9 @@ def get_cat_subset(cat,center,ra_range=0.5*u.arcmin,dec_range=0.5*u.arcmin, size
     
     if super_sb_mag is not None:
         subset = subset[subset[:,12]<=super_sb_mag]
+        
+    if super_mixed_mag is not None:
+        subset = subset[subset[:,13]<=super_mixed_mag]
 
     if zcut is not None:
         subset = subset[subset[:,2]<=zcut]
