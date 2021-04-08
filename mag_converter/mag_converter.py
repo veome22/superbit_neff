@@ -3,6 +3,7 @@ __all__ = ['stmag_conversion', 'get_stmag', 'abmag_conversion', 'get_abmag', 'ge
 import numpy as np
 from astropy import units as u
 from astropy import constants as const
+import bit_tools as bt
 
 # Get redshifted spectrum by redshifting in Integrated Flux Density space 
 def redshift_sed(sed, z):
@@ -74,8 +75,9 @@ def get_abmag(r, f_lam, lam, l_pivot, correction=1.0):
 
     f_exp = f1/f2 # erg s^-1 cm^-2 AA^-1
 
-    mag = -2.5 * np.log10(f_exp) - 2.5 * np.log10(l_pivot**2 / (const.c*u.s/u.m)) - 48.6
-    return mag
+    stmag = -2.5 * np.log10(f_exp) - 21.1
+    abmag = bt.converters.magst_to_magab(stmag, l_pivot * u.AA.to(u.nm))
+    return abmag
 
 # Get the required corrective factor for the spectral flux density
 def get_correction(m_exp, m_obs):
