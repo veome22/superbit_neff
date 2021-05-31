@@ -10,12 +10,22 @@ def redshift_sed(sed, z):
     """
     Returns the redshifted SED from a source spectrum
 
-    Args:
-        sed: Source Spectral Flux Density, [ergs/s/cm^2/Angstrom]
-        z: Redshift
+    Parameters
+    ----------
+    sed: 2d numpy array with 
+        sed[:,0] = wavelength [Angstrom]
+        sed[:,1] = Source Spectral Flux Density, [ergs/s/cm^2/Angstrom]
+        
+    
+    z: float
+        Redshift
 
     Returns:
-        Redshifted SED, [ergs/s/cm^2/Angstrom]
+    ----------
+    int_sed: 2d numpy array with
+        int_sed[:,0] = wavelength [Angstrom]
+        int_sed[:,1] = Redshifted SED, [ergs/s/cm^2/Angstrom]
+        
     """
     int_sed = np.copy(sed)
     
@@ -36,44 +46,66 @@ def get_stmag(r, f_lam, lam, correction=1.0):
     """
     Returns the observed ST mag for a given filter and source spectrum
 
-    Args:
-        r: Filter Response Function, [unitless]
-        f_lam: Source Spectral Flux Density, [ergs/s/cm^2/Angstrom]
-        lam: Wavelength range, [Angstrom]
-        correction: constant factor to scale f_lam depending on the source
+    Parameters
+    ----------
+    r: array
+        Filter Response Function corresponding to lam, [unitless]
+        
+    f_lam: array
+        Source Spectral Flux Density corresponding to lam, [ergs/s/cm^2/Angstrom]
+    
+    lam: array
+        Wavelength range, [Angstrom]
+    
+    correction: float
+        constant factor to scale f_lam depending on the source
 
     Returns:
+    ----------
+    stmag: float
         ST Magnitude
     """
     f_lam = f_lam * correction
     f1 = np.trapz(y=f_lam * r * lam, x=lam)
     f2 = np.trapz(y=r * lam, x=lam) 
 
-    f_exp = f1/f2 # erg s^-1 cm^-2 AA^-1
+    f_exp = f1/f2
 
-    mag = -2.5 * np.log10(f_exp) - 21.1
-    return mag
+    stmag = -2.5 * np.log10(f_exp) - 21.1
+    return stmag
 
 # Get mag from Response Function, Spectrum, Lambda Range, and Scaling Correction to Spectrum
 def get_abmag(r, f_lam, lam, l_pivot, correction=1.0):
     """
     Returns the observed AB mag for a given filter and source spectrum
 
-    Args:
-        r: Filter Response Function, [unitless]
-        f_lam: Source Spectral Flux Density, [ergs/s/cm^2/Angstrom]
-        lam: Wavelength range, [Angstrom]
-        l_pivot: Pivot Wavelength of the Filter [Angstrom]
-        correction: constant factor to scale f_lam depending on the source
-
+    Parameters
+    ----------
+    r: array
+        Filter Response Function corresponding to lam, [unitless]
+        
+    f_lam: array
+        Source Spectral Flux Density corresponding to lam, [ergs/s/cm^2/Angstrom]
+    
+    lam: array
+        Wavelength range, [Angstrom]
+        
+    l_pivot: float
+        Pivot Wavelength of the Filter [Angstrom]
+        
+    correction: float
+        constant factor to scale f_lam depending on the source
+        
     Returns:
+    ----------
+    abmag: float
         AB Magnitude
     """
     f_lam = f_lam * correction
     f1 = np.trapz(y=f_lam * r * lam, x=lam)
     f2 = np.trapz(y=r * lam, x=lam) 
 
-    f_exp = f1/f2 # erg s^-1 cm^-2 AA^-1
+    f_exp = f1/f2
 
     stmag = -2.5 * np.log10(f_exp) - 21.1
     abmag = bt.converters.magst_to_magab(stmag, l_pivot * u.AA.to(u.nm))
@@ -84,7 +116,7 @@ def get_correction(m_exp, m_obs):
     return np.power(10, (m_exp/2.5)-(m_obs/2.5))
 
 
-# Get SuperBIT magitudes from Observed Mag
+# Get SuperBIT ST magitudes from Observed Mag
 def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_template):
     """
     Converts ST Mag from one filter to another, assuming both Elliptical and Starburst 
@@ -184,7 +216,7 @@ def stmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_templa
 
 
 
-# Get SuperBIT magitudes from Observed Mag
+# Get SuperBIT AB magitudes from Observed Mag
 def abmag_conversion(mag_obs, z, src_band, target_band, e_template, starb_template, src_pivot=1.0, target_pivot=1.0):
     """
     Converts AB Mags from one filter to another, assuming both Elliptical and Starburst 
