@@ -99,9 +99,24 @@ def get_blend_ratio(cosmos, center, psf, ra_range=0.5*u.arcmin, dec_range=0.5*u.
 
 
 def overlap_area(d, rad1, rad2):
-    """Return the area of intersection of two circles.
-    The circles have radii R and r, and their centres are separated by d.
     """
+    Return the area of intersection of two circles.
+    The circles have radii R and r, and their centres are separated by d.
+    
+    Parameters
+    ----------
+    d : float
+        Distance between the centres of the cirles
+    rad1 : float
+        radius of circle 1
+    rad2 : float
+        radius of circle 2
+
+    Returns
+    -------
+    overlap_area : float
+        area of overlap between the two circles
+    """  
     r = min(rad1, rad2)
     R = max(rad1, rad2)
 
@@ -115,9 +130,11 @@ def overlap_area(d, rad1, rad2):
     r2, R2, d2 = r**2, R**2, d**2
     alpha = np.arccos((d2 + r2 - R2) / (2*d*r))
     beta = np.arccos((d2 + R2 - r2) / (2*d*R))
-    return ( r2 * alpha + R2 * beta -
-             0.5 * (r2 * np.sin(2*alpha) + R2 * np.sin(2*beta))
-           )
+    
+    overlap_area = r2 * alpha + R2 * beta - 0.5 * (r2 * np.sin(2*alpha) + R2 * np.sin(2*beta))
+        
+    return overlap_area
+
 
 def get_cat_subset(cat,center,ra_range=0.5*u.arcmin,dec_range=0.5*u.arcmin, sizecut=None, magcut=None, super_e_mag=None, super_sb_mag=None, super_mixed_mag=None, zcut=None):
     """ get a square subset the catalogue centered at a given position and a size cut in arcseconds"""
